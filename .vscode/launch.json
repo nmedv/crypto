@@ -1,0 +1,35 @@
+{
+    // Используйте IntelliSense, чтобы узнать о возможных атрибутах.
+    // Наведите указатель мыши, чтобы просмотреть описания существующих атрибутов.
+    // Для получения дополнительной информации посетите: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Gammer Debug",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/gammer.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": ["-s${workspaceFolder}\\test\\saved.txt", "-gn 32", "-eutf-8"]
+        },
+        {
+            "name": "Aes Debug",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/aes.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": "-o aes.sige decrypt -s aes.sig -k \"меня зовут никита\""
+        },
+        {
+            "name": "PWM Debug",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/pwm.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": "steam новыйпароль"
+        }
+    ]
+}
