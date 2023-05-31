@@ -1,16 +1,5 @@
 from argparse import ArgumentParser
-from core.pwm import Pwm
-
-
-def yesorno(msg: str):
-	inp = ""
-	try:
-		while inp != "y" and inp != "n":
-			inp = input(msg)
-		if inp == "y": return True
-		else: return False
-	except KeyboardInterrupt:
-		return False
+from core.pwm import Pwm, yesorno
 
 
 parser = ArgumentParser(prog="pwm", description="Password manager")
@@ -22,55 +11,43 @@ parser.add_argument("-r", action="store_true", help="Remove password")
 parser.add_argument("-f", action="store_true", help="Suppress warnings")
 
 args = parser.parse_args()
-masterpw = input("Master password: ")
+
 try:
+	masterpw = input("Master password: ")
+	pwm = Pwm(args.s, masterpw)
+	if not pwm:
+		print("pwm: error: wrong master password")
+		exit()
+
 	if args.password:
-		pwm = Pwm(args.s, masterpw)
-		if pwm.exists(args.name):
-			if args.f:
-				pwm.set(args.name, args.password)
-				pwm.save()
-			else:
-				print(f"pwm: warning: a password with name \"{args.name}\" already exists")
-				if yesorno("Are you sure you want to overwrite it? (y, n): "):
-					pwm.set(args.name, args.password)
-					pwm.save()
-				else:
-					exit()
-		else:
+		confirm = True
+		if not args.f and pwm.exists(args.name):
+			print(f"pwm: warning: a password with name \"{args.name}\" already exists")
+			confirm = yesorno("Are you sure you want to overwrite it? (y, n): ")
+		if confirm:
 			pwm.set(args.name, args.password)
 			pwm.save()
+	elif args.r:
+		confirm = True
+		if not pwm.exists(args.name):
+			print(f"pwm: error: password with name \"{args.name}\" doesn't exists")
+			exit()
+		if not args.f:
+			if args.name == "*":
+				print(f"pwm: warning: this action will remove ALL existing passwords")
+			else:
+				print(f"pwm: warning: this action will remove \"{args.name}\" password")
+			confirm = yesorno("Are you sure you want to overwrite it? (y, n): ")
+		if confirm:
+			pwm.remove(args.name)
+			pwm.save()
 	else:
-		pwm = Pwm(args.s, masterpw)
+		res = pwm.get(args.name)
 		if args.name == "*":
-			if args.r:
-				if args.f:
-					pwm.remove("*")
-					pwm.save()
-				else:
-					print(f"pwm: warning: this action will remove ALL existing passwords")
-					if yesorno("Are you sure you want to continue? (y, n): "):
-						pwm.remove("*")
-						pwm.save()
-					else:
-						exit()
-			else:
-				res = pwm.get(args.name)
-				for name in res:
-					print(f"{name}: {res[name]}")
+			for name in res:
+				print(f"{name}: {res[name]}")
 		else:
-			if args.r:
-				if args.f:
-					pwm.remove(args.name)
-					pwm.save()
-				else:
-					print(f"pwm: warning: this action will remove \"{args.name}\" password")
-					if yesorno("Are you sure you want to continue? (y, n): "):
-						pwm.remove(args.name)
-						pwm.save()
-					else:
-						exit()
-			else:
-				print(pwm.get(args.name))
+			print(pwm.get(args.name))
+
 except Exception as err:
 	print(f"pwm: error: {err}")

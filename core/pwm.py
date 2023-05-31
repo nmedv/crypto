@@ -2,13 +2,14 @@ from core.utils import writefileb
 from core.utils import strtobytes, bytestostr
 from core.aes import AES_encrypt, AES_decrypt
 from core.exeptions import Error
+from hashlib import sha256
 import json
 
 class Pwm:
 
 	def __init__(self, datafile: str, masterpw: str):
 		self.datafile = datafile
-		self.masterpw = strtobytes(masterpw)
+		self.masterpw = sha256(strtobytes(masterpw)).digest()
 
 		try:
 			with open(self.datafile, "rb") as df:
@@ -34,7 +35,11 @@ class Pwm:
 			ptr += self.tag_size
 			self.data_encrypted = self.alldata[ptr : ptr + self.data_size]
 
-			self.data_decrypted = AES_decrypt(self.data_encrypted, self.masterpw, self.nonce, self.tag)
+			try:
+				self.data_decrypted = AES_decrypt(self.data_encrypted, self.masterpw, self.nonce, self.tag)
+			except:
+				return None
+			
 			self.pwmap: dict = json.loads(bytestostr(self.data_decrypted))
 
 
@@ -85,3 +90,14 @@ class Pwm:
 			self.data_encrypted
 		
 		writefileb(self.datafile, self.alldata)
+
+
+def yesorno(msg: str):
+	inp = ""
+	try:
+		while inp != "y" and inp != "n":
+			inp = input(msg)
+		if inp == "y": return True
+		else: return False
+	except KeyboardInterrupt:
+		return False
